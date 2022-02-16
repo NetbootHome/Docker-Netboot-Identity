@@ -1,0 +1,45 @@
+name: Update WEB Gateway
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 0 * * SUN'
+
+jobs:
+  build:
+    # Define the execution on the self-hosted server.
+    runs-on: [self-hosted]
+          
+    # Define all the steps of the workflow
+    steps:
+      # Checking out the repository
+      - name: Checking out the repository
+        uses: actions/checkout@v2
+
+        # Setup environment variables
+      - name: Setup environment variables
+        env:
+          KEYCLOAK_ADMIN: ${{secrets.KEYCLOAK_ADMIN}}
+          KEYCLOAK_ADMIN_PASSWORD: ${{secrets.KEYCLOAK_ADMIN_PASSWORD}}
+          KC_DB_USERNAME: ${{secrets.KC_DB_USERNAME}}
+          KC_DB_PASSWORD: ${{secrets.KC_DB_PASSWORD}}
+        run: |
+          touch .env
+          echo KEYCLOAK_ADMIN=${{ secrets.KEYCLOAK_ADMIN }} >> .env
+          echo KEYCLOAK_ADMIN_PASSWORD=${{ secrets.KEYCLOAK_ADMIN_PASSWORD }} >> .env
+          echo KC_DB_USERNAME=${{ secrets.KC_DB_USERNAME }} >> .env
+          echo KC_DB_PASSWORD=${{ secrets.KC_DB_PASSWORD }} >> .env
+
+      # Update associated images
+      - name: Update associated images
+        run: "sudo /usr/local/bin/docker-compose -p identity pull"
+        
+      # Stop Containers
+      - name: Stop Containers
+        run: "sudo /usr/local/bin/docker-compose -p identity stop"
+        
+      # Start Containers
+      - name: Start Containers
+        run: "sudo /usr/local/bin/docker-compose -p identity up -d"

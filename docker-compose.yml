@@ -1,0 +1,51 @@
+version: '3.7'
+
+services:
+
+  service:
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      KC_HOSTNAME: identity.netboot.fr
+      KC_PROXY: edge
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://database/keycloak
+      KC_DB_USERNAME: ${KC_DB_USERNAME}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HTTPS_CERTIFICATE_FILE: /opt/keycloak/ssl/server.crt.pem
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /opt/keycloak/ssl/server.key.pem
+    networks:
+      - gateway
+      - internal
+    volumes:
+       - /mnt/iscsi/container/infrasturcture/keycloak/ssl/:/opt/keycloak/ssl/
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=gateway
+      - traefik.http.routers.identity.entryPoints=websecure
+      - traefik.http.routers.identity.tls=true
+      - traefik.http.routers.identity.service=identity
+      - traefik.http.routers.identity.rule=Host("identity.netboot.fr")
+      - traefik.http.routers.identity.tls.certresolver=letsencrypt
+      - traefik.http.services.identity.loadbalancer.server.port=8443
+      - traefik.http.services.identity.loadbalancer.server.scheme=https
+    command: ["start --auto-build"]
+    restart: always
+
+  database:
+    image: postgres
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: ${KC_DB_USERNAME}
+      POSTGRES_PASSWORD: ${KC_DB_PASSWORD}
+    volumes:
+       - /mnt/iscsi/container/infrasturcture/keycloak/data:/var/lib/postgresql/data
+    networks:
+       - internal
+
+networks:
+  gateway:
+    external: true
+  internal:
+    external: false
