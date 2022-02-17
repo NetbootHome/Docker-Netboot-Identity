@@ -20,7 +20,7 @@ services:
       - internal
     volumes:
        - /mnt/iscsi/container/infrasturcture/keycloak/ssl/:/opt/keycloak/ssl/
-       - ./provider:/opt/keycloak/provider/
+       - ./providers:/opt/keycloak/providers/
     labels:
       - traefik.enable=true
       - traefik.docker.network=gateway
