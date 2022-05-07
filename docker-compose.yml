@@ -3,7 +3,7 @@ version: '3.7'
 services:
 
   netboot_service:
-    image: quay.io/keycloak/keycloak:latest
+    build: docker/service
     environment:
       KC_HOSTNAME: identity.netboot.fr
       KC_PROXY: edge
@@ -35,7 +35,7 @@ services:
     restart: always
     
   netboot_db:
-    image: postgres
+    build: docker/db
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: ${KC_DB_USERNAME}
