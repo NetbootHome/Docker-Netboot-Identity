@@ -36,12 +36,12 @@ jobs:
 
       # Update associated images
       - name: Update associated images
-        run: "sudo /usr/local/bin/docker-compose -p netboot-identity pull"
+        run: "sudo /usr/local/bin/docker-compose -p identity pull"
         
       # Stop Containers
       - name: Stop Containers
-        run: "sudo /usr/local/bin/docker-compose -p netboot-identity stop"
+        run: "sudo /usr/local/bin/docker-compose -p identity stop"
         
       # Start Containers
       - name: Start Containers
-        run: "sudo /usr/local/bin/docker-compose -p netboot-identity up -d --build"
+        run: "sudo /usr/local/bin/docker-compose -p identity up -d --build"
