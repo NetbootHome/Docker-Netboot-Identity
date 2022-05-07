@@ -47,12 +47,6 @@ services:
     restart: always
 
 networks:
-  webgateway:
-    external: true
-  netboot:
-    external: false
-
-networks:
   gateway:
     external: true
   internal:
