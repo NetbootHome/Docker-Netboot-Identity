@@ -9,3 +9,7 @@ updates:
     directory: "/docker/service"
     schedule:
       interval: "daily"
+  - package-ecosystem: "docker"
+    directory: "/docker/db"
+    schedule:
+      interval: "daily"
