@@ -1,11 +1,13 @@
-name: Update WEB Gateway
-
+name: Build
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.gitignore'
+      - '**/*.gitattributes'
   schedule:
-    - cron: '0 0 * * SUN'
+    - cron: '0 5 * * SUN'
 
 jobs:
   build:
@@ -34,12 +36,12 @@ jobs:
 
       # Update associated images
       - name: Update associated images
-        run: "sudo /usr/local/bin/docker-compose -p identity pull"
+        run: "sudo /usr/local/bin/docker-compose -p netboot-identity pull"
         
       # Stop Containers
       - name: Stop Containers
-        run: "sudo /usr/local/bin/docker-compose -p identity stop"
+        run: "sudo /usr/local/bin/docker-compose -p netboot-identity stop"
         
       # Start Containers
       - name: Start Containers
-        run: "sudo /usr/local/bin/docker-compose -p identity up -d"
+        run: "sudo /usr/local/bin/docker-compose -p netboot-identity up -d --build"
