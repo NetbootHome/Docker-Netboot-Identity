@@ -2,13 +2,13 @@ version: '3.7'
 
 services:
 
-  service:
+  netboot_service:
     image: quay.io/keycloak/keycloak:latest
     environment:
       KC_HOSTNAME: identity.netboot.fr
       KC_PROXY: edge
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://database/keycloak
+      KC_DB_URL: jdbc:postgresql://netboot_db/keycloak
       KC_DB_USERNAME: ${KC_DB_USERNAME}
       KC_DB_PASSWORD: ${KC_DB_PASSWORD}
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
@@ -16,34 +16,41 @@ services:
       KC_HTTPS_CERTIFICATE_FILE: /opt/keycloak/ssl/server.crt.pem
       KC_HTTPS_CERTIFICATE_KEY_FILE: /opt/keycloak/ssl/server.key.pem
     networks:
-      - gateway
-      - internal
+      - webgateway
+      - netboot
     volumes:
-       - /mnt/iscsi/container/infrasturcture/keycloak/ssl/:/opt/keycloak/ssl/
-       - ./providers:/opt/keycloak/providers/
+       - /docker/data/netboot/identity/ssl/:/opt/keycloak/ssl/
+       - /docker/data/netboot/identity/providers:/opt/keycloak/providers/
     labels:
       - traefik.enable=true
-      - traefik.docker.network=gateway
-      - traefik.http.routers.identity.entryPoints=websecure
-      - traefik.http.routers.identity.tls=true
-      - traefik.http.routers.identity.service=identity
-      - traefik.http.routers.identity.rule=Host("identity.netboot.fr")
-      - traefik.http.routers.identity.tls.certresolver=letsencrypt
-      - traefik.http.services.identity.loadbalancer.server.port=8443
-      - traefik.http.services.identity.loadbalancer.server.scheme=https
+      - traefik.docker.network=webgateway
+      - traefik.http.routers.netboot_identity.entryPoints=websecure
+      - traefik.http.routers.netboot_identity.tls=true
+      - traefik.http.routers.netboot_identity.service=netboot_identity
+      - traefik.http.routers.netboot_identity.rule=Host("identity.netboot.fr")
+      - traefik.http.routers.netboot_identity.tls.certresolver=letsencrypt
+      - traefik.http.services.netboot_identity.loadbalancer.server.port=8443
+      - traefik.http.services.netboot_identity.loadbalancer.server.scheme=https
     command: ["start --auto-build"]
     restart: always
-
-  database:
+    
+  netboot_db:
     image: postgres
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: ${KC_DB_USERNAME}
-      POSTGRES_PASSWORD: ${KC_DB_PASSWORD}
+      POSTGRES_PASSWORD: 85#${KC_DB_PASSWORD}
     volumes:
-       - /mnt/iscsi/container/infrasturcture/keycloak/data:/var/lib/postgresql/data
+       - /docker/data/netboot/identity/db:/var/lib/postgresql/data
     networks:
-       - internal
+       - netboot
+    restart: always
+
+networks:
+  webgateway:
+    external: true
+  netboot:
+    external: false
 
 networks:
   gateway:
