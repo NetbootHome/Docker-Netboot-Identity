@@ -36,7 +36,7 @@ services:
       - traefik.http.services.netboot_identity.loadbalancer.server.scheme=https
     command: ["start --auto-build"]
     healthcheck:
-      test: ["CMD", "curl", "-kILs", "--fail", "https://localhost:8443"]
+      test: ["CMD", "curl", "-kILs", "--fail", "http://localhost:8080"]
       interval: 10s
       timeout: 5s
       retries: 5
