@@ -16,11 +16,14 @@ services:
       KC_HTTPS_CERTIFICATE_FILE: /opt/keycloak/ssl/server.crt.pem
       KC_HTTPS_CERTIFICATE_KEY_FILE: /opt/keycloak/ssl/server.key.pem
     networks:
-      - webgateway
-      - netboot
+      default: {}
+      webgateway: {}
     volumes:
        - /docker/data/netboot/identity/ssl/:/opt/keycloak/ssl/
        - /docker/data/netboot/identity/providers:/opt/keycloak/providers/
+    depends_on:
+      netboot_db:
+        condition: service_healthy
     labels:
       - traefik.enable=true
       - traefik.docker.network=webgateway
@@ -32,6 +35,11 @@ services:
       - traefik.http.services.netboot_identity.loadbalancer.server.port=8443
       - traefik.http.services.netboot_identity.loadbalancer.server.scheme=https
     command: ["start --auto-build"]
+    healthcheck:
+      test: ["CMD", "curl", "-kILs", "--fail", "https://localhost:8443"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: always
     
   netboot_db:
@@ -39,15 +47,18 @@ services:
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: ${KC_DB_USERNAME}
-      POSTGRES_PASSWORD: 85#${KC_DB_PASSWORD}
+      POSTGRES_PASSWORD: ${KC_DB_PASSWORD}
     volumes:
        - /docker/data/netboot/identity/db:/var/lib/postgresql/data
     networks:
-       - netboot
+      default: {}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: always
 
 networks:
   webgateway:
     external: true
-  netboot:
-    external: false
